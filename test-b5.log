@@ -1,0 +1,46 @@
+PASS  loads, menu screen  — {"screen":"menu","level":1,"step":0,"stepName":"wipe","paused":false,"muted":false,"score":0,"totalStars":0,"mistakes":0,"maxUnlocked":1,"customer":"Mia","colour":"coral","colourName":"Coral Pink","pattern":"plain","patternName":"Plain","wipeLeft":0,"smudges":[],"paintPct":0,"paintTarget":0.8,"selectedColour":null,"selectedSticker":null,"patternApplied":false,"stickersNeeded":[{"type":"star","need":1,"have":0}],"stickersPlaced":0,"stickersComplete":false,"canDeliver":false,"caseRect":{"x":29,"y":21,"w":42,"h":59},"starsEarned":[]}
+PASS  start -> playing level 1  — {"screen":"playing","level":1,"step":0,"stepName":"wipe","paused":false,"muted":false,"score":0,"totalStars":0,"mistakes":0,"maxUnlocked":1,"customer":"Mia","colour":"coral","colourName":"Coral Pink","pattern":"plain","patternName":"Plain","wipeLeft":3,"smudges":[{"x":47,"y":69},{"x":62,"y":73},{"x":59,"y":73}],"paintPct":0,"paintTarget":0.8,"selectedColour":null,"selectedSticker":null,"patternApplied":false,"stickersNeeded":[{"type":"star","need":1,"have":0}],"stickersPlaced":0,"stickersComplete":false,"canDeliver":false,"caseRect":{"x":29,"y":21,"w":42,"h":59},"starsEarned":[]}
+LOOP guard=1 {"screen":"playing","level":1,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":0}
+LOOP guard=2 {"screen":"clear","level":1,"step":4,"paint":0.8,"placed":1,"mistakes":0,"stars":3}
+LOOP guard=3 {"screen":"playing","level":2,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":3}
+LOOP guard=4 {"screen":"clear","level":2,"step":4,"paint":0.8,"placed":1,"mistakes":0,"stars":6}
+LOOP guard=5 {"screen":"playing","level":3,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":6}
+LOOP guard=6 {"screen":"clear","level":3,"step":4,"paint":0.83,"placed":2,"mistakes":0,"stars":9}
+LOOP guard=7 {"screen":"playing","level":4,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":9}
+LOOP guard=8 {"screen":"clear","level":4,"step":4,"paint":0.83,"placed":2,"mistakes":0,"stars":12}
+LOOP guard=9 {"screen":"playing","level":5,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":12}
+LOOP guard=10 {"screen":"clear","level":5,"step":4,"paint":0.85,"placed":2,"mistakes":0,"stars":15}
+LOOP guard=11 {"screen":"playing","level":6,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":15}
+LOOP guard=12 {"screen":"clear","level":6,"step":4,"paint":0.85,"placed":2,"mistakes":0,"stars":18}
+LOOP guard=13 {"screen":"playing","level":7,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":18}
+LOOP guard=14 {"screen":"clear","level":7,"step":4,"paint":0.85,"placed":3,"mistakes":0,"stars":21}
+LOOP guard=15 {"screen":"playing","level":8,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":21}
+LOOP guard=16 {"screen":"clear","level":8,"step":4,"paint":0.89,"placed":2,"mistakes":0,"stars":24}
+LOOP guard=17 {"screen":"playing","level":9,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":24}
+LOOP guard=18 {"screen":"clear","level":9,"step":4,"paint":0.89,"placed":3,"mistakes":0,"stars":27}
+LOOP guard=19 {"screen":"playing","level":10,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":27}
+LOOP guard=20 {"screen":"clear","level":10,"step":4,"paint":0.89,"placed":3,"mistakes":0,"stars":30}
+LOOP guard=21 {"screen":"playing","level":11,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":30}
+LOOP guard=22 {"screen":"clear","level":11,"step":4,"paint":0.9,"placed":3,"mistakes":0,"stars":33}
+LOOP guard=23 {"screen":"playing","level":12,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":33}
+LOOP guard=24 {"screen":"clear","level":12,"step":4,"paint":0.9,"placed":3,"mistakes":0,"stars":36}
+LOOP guard=25 {"screen":"playing","level":13,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":36}
+LOOP guard=26 {"screen":"clear","level":13,"step":4,"paint":0.9,"placed":3,"mistakes":0,"stars":39}
+LOOP guard=27 {"screen":"playing","level":14,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":39}
+LOOP guard=28 {"screen":"clear","level":14,"step":4,"paint":0.93,"placed":3,"mistakes":0,"stars":42}
+LOOP guard=29 {"screen":"playing","level":15,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":42}
+LOOP guard=30 {"screen":"clear","level":15,"step":4,"paint":0.93,"placed":3,"mistakes":0,"stars":45}
+LOOP guard=31 {"screen":"playing","level":16,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":45}
+LOOP guard=32 {"screen":"clear","level":16,"step":4,"paint":0.93,"placed":3,"mistakes":0,"stars":48}
+LOOP guard=33 {"screen":"playing","level":17,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":48}
+LOOP guard=34 {"screen":"clear","level":17,"step":4,"paint":0.95,"placed":4,"mistakes":0,"stars":51}
+LOOP guard=35 {"screen":"playing","level":18,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":51}
+LOOP guard=36 {"screen":"clear","level":18,"step":4,"paint":0.95,"placed":5,"mistakes":0,"stars":54}
+LOOP guard=37 {"screen":"playing","level":19,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":54}
+LOOP guard=38 {"screen":"clear","level":19,"step":4,"paint":0.95,"placed":4,"mistakes":0,"stars":57}
+LOOP guard=39 {"screen":"playing","level":20,"step":0,"paint":0,"placed":0,"mistakes":0,"stars":57}
+LOOP guard=40 {"screen":"win","level":20,"step":4,"paint":0.95,"placed":5,"mistakes":0,"stars":60}
+PASS  full playthrough -> win screen after 20 customers  — {"screen":"win","level":20,"step":4,"stepName":"deliver","paused":false,"muted":false,"score":3500,"totalStars":60,"mistakes":0,"maxUnlocked":20,"customer":"Alex","colour":"coral","colourName":"Coral Pink","pattern":"stars","patternName":"Little Stars","wipeLeft":0,"smudges":[],"paintPct":0.95,"paintTarget":0.95,"selectedColour":"coral","selectedSticker":"heart","patternApplied":true,"stickersNeeded":[{"type":"rocket","need":1,"have":1},{"type":"crown","need":1,"have":1},{"type":"gem","need":2,"have":2},{"type":"heart","need":1,"have":1}],"stickersPlaced":5,"stickersComplete":true,"canDeliver":true,"caseRect":{"x":29,"y":21,"w":42,"h":59},"starsEarned":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]} guard=40
+PASS  win: totalStars>0, score>0  — {"screen":"win","level":20,"step":4,"stepName":"deliver","paused":false,"muted":false,"score":3500,"totalStars":60,"mistakes":0,"maxUnlocked":20,"customer":"Alex","colour":"coral","colourName":"Coral Pink","pattern":"stars","patternName":"Little Stars","wipeLeft":0,"smudges":[],"paintPct":0.95,"paintTarget":0.95,"selectedColour":"coral","selectedSticker":"heart","patternApplied":true,"stickersNeeded":[{"type":"rocket","need":1,"have":1},{"type":"crown","need":1,"have":1},{"type":"gem","need":2,"have":2},{"type":"heart","need":1,"have":1}],"stickersPlaced":5,"stickersComplete":true,"canDeliver":true,"caseRect":{"x":29,"y":21,"w":42,"h":59},"starsEarned":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]}
+NO CONSOLE/PAGE ERRORS
+RESULT: 4/4 checks passed

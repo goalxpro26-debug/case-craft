@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Case Craft: Design Studio</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; padding:0; background:#2b2140; font-family:'Trebuchet MS','Segoe UI',Verdana,sans-serif; }
+  body { display:flex; justify-content:center; min-height:100vh; }
+  #wrap { width:100%; max-width:480px; background:linear-gradient(180deg,#fdf6ec 0%,#ffe9f3 55%,#e3f2ff 100%); min-height:100vh; display:flex; flex-direction:column; position:relative; }
+  header { display:flex; align-items:center; gap:8px; padding:8px 10px 4px; }
+  .pill { background:#fff; border:2px solid #5b4a8a; border-radius:999px; padding:4px 10px; font-weight:700; font-size:13px; color:#3a2d5c; white-space:nowrap; }
+  #hud-level { background:#5b4a8a; color:#fff; }
+  .spacer { flex:1; }
+  .iconbtn { background:#fff; border:2px solid #5b4a8a; border-radius:12px; width:38px; height:34px; font-size:17px; font-weight:800; color:#3a2d5c; cursor:pointer; }
+  .iconbtn:active { transform:scale(.93); }
+  #request { margin:4px 10px; background:#fff; border:2px solid #ffb3d1; border-radius:14px; padding:8px 12px; font-size:14px; line-height:1.45; color:#3a2d5c; box-shadow:0 2px 0 #f3c6da; }
+  #request b { color:#c2185b; }
+  #request .req-line { display:block; }
+  #steps { display:flex; gap:6px; margin:6px 12px 2px; }
+  .stepdot { flex:1; text-align:center; font-size:11px; font-weight:700; padding:5px 2px; border-radius:999px; background:#e8e0f5; color:#7a6aa0; border:2px solid transparent; }
+  .stepdot.active { background:#ffd94d; color:#4a3200; border-color:#e0a800; }
+  .stepdot.done { background:#b8e6b0; color:#1e5c1a; }
+  #stage { position:relative; margin:4px auto 0; width:100%; max-width:480px; }
+  canvas#game { display:block; width:100%; height:auto; touch-action:none; background:#f7ead9; }
+  #hint { min-height:22px; text-align:center; font-size:13px; font-weight:700; color:#6a4a9a; padding:2px 10px; }
+  #toolbar { padding:6px 10px 10px; display:flex; flex-direction:column; gap:8px; }
+  .toolrow { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; align-items:center; }
+  .tool-label { width:100%; text-align:center; font-size:13px; font-weight:700; color:#5b4a8a; }
+  .swatch { width:44px; height:44px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px #999; cursor:pointer; }
+  .swatch.sel { box-shadow:0 0 0 3px #222, 0 0 0 6px #ffd94d; transform:scale(1.12); }
+  .tbtn { background:#fff; border:2px solid #5b4a8a; border-radius:12px; padding:6px 10px; font-size:13px; font-weight:700; color:#3a2d5c; cursor:pointer; min-height:44px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+  .tbtn.sel { background:#ffd94d; border-color:#e0a800; }
+  .tbtn:disabled { opacity:.45; cursor:default; }
+  .tbtn canvas { display:block; }
+  .bigbtn { background:#ff5c8a; color:#fff; border:3px solid #c2185b; border-radius:16px; padding:12px 26px; font-size:18px; font-weight:800; cursor:pointer; box-shadow:0 4px 0 #c2185b; }
+  .bigbtn:active { transform:translateY(3px); box-shadow:0 1px 0 #c2185b; }
+  .bigbtn:disabled { opacity:.45; cursor:default; }
+  .bigbtn.green { background:#43a047; border-color:#1b5e20; box-shadow:0 4px 0 #1b5e20; }
+  .bigbtn.purple { background:#7e57c2; border-color:#4527a0; box-shadow:0 4px 0 #4527a0; }
+  .overlay { position:absolute; inset:0; background:rgba(43,33,64,.92); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:24px; text-align:center; color:#fff; z-index:10; }
+  .overlay h1 { margin:0; font-size:34px; line-height:1.1; color:#ffd94d; text-shadow:0 3px 0 #c2185b; }
+  .overlay h2 { margin:0; font-size:26px; color:#ffd94d; }
+  .overlay p { margin:0; font-size:15px; line-height:1.55; max-width:380px; }
+  .overlay .sub { font-size:13px; opacity:.9; }
+  .stars-big { font-size:42px; letter-spacing:6px; color:#ffd94d; text-shadow:0 2px 0 #b8860b; }
+  .rowbtns { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  #levels-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; width:100%; max-width:340px; }
+  .lv { background:#fff; color:#3a2d5c; border:2px solid #ffd94d; border-radius:12px; padding:12px 0; font-size:16px; font-weight:800; cursor:pointer; position:relative; }
+  .lv.locked { opacity:.4; cursor:default; border-color:#888; }
+  .lv .lvstars { display:block; font-size:11px; color:#e0a800; }
+  .hidden { display:none !important; }
+  #progress-wrap { margin:0 12px 8px; background:#fff; border:2px solid #5b4a8a; border-radius:999px; height:16px; overflow:hidden; }
+  #progress-bar { height:100%; width:0%; background:linear-gradient(90deg,#ff5c8a,#ffd94d,#43a047); transition:width .3s; }
+  footer { text-align:center; font-size:11px; color:#8a7aa8; padding:4px 0 10px; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <span class="pill" id="hud-level">Customer 1 / 20</span>
+    <span class="pill" id="hud-score">Score 0</span>
+    <span class="pill" id="hud-stars">&#9733; 0</span>
+    <span class="spacer"></span>
+    <button class="iconbtn" id="btn-mute" title="Mute / unmute">&#9834;</button>
+    <button class="iconbtn" id="btn-pause" title="Pause">II</button>
+    <button class="iconbtn" id="btn-levels" title="Customers">&#9776;</button>
+  </header>
+  <div id="request"><span class="req-line">Welcome to the studio!</span></div>
+  <div id="steps">
+    <div class="stepdot" data-step="0">1 Wipe</div>
+    <div class="stepdot" data-step="1">2 Paint</div>
+    <div class="stepdot" data-step="2">3 Pattern</div>
+    <div class="stepdot" data-step="3">4 Stickers</div>
+    <div class="stepdot" data-step="4">5 Deliver</div>
+  </div>
+  <div id="stage">
+    <canvas id="game" width="480" height="560"></canvas>
+    <!-- Menu overlay -->
+    <div class="overlay" id="ov-menu">
+      <h1>Case Craft<br>Design Studio</h1>
+      <p>Run your own little phone-case studio! Every customer walks in with a dream case in mind. Wipe it clean, spray on their colour, add their pattern, stick on their stickers &mdash; then hand it over and watch them smile.</p>
+      <p class="sub"><b>How to play:</b> 1) Tap the smudges to wipe &bull; 2) Pick the colour, then drag across the case to paint &bull; 3) Tap the pattern they asked for &bull; 4) Pick a sticker, then tap the case to place it (tap a placed sticker to remove it) &bull; 5) Tap Deliver! No timers, no losing &mdash; just craft.</p>
+      <p class="sub">20 customers, from easy first-timers to very picky regulars. Earn up to 3 stars per case.</p>
+      <button class="bigbtn" id="btn-start">Start Crafting</button>
+      <button class="bigbtn purple" id="btn-how">How to Play</button>
+    </div>
+    <!-- How to overlay -->
+    <div class="overlay hidden" id="ov-how">
+      <h2>How to Play</h2>
+      <p><b>Wipe:</b> tap every dusty smudge on the case until it sparkles.<br>
+      <b>Paint:</b> choose the colour in the request card, then press and drag over the case until the paint meter is full.<br>
+      <b>Pattern:</b> tap the pattern button that matches the request.<br>
+      <b>Stickers:</b> tap a sticker in the tray, then tap the case where it should go. Tap a placed sticker to peel it off.<br>
+      <b>Deliver:</b> when every step is ticked, tap the big Deliver button.<br>
+      Wrong colour or pattern? No penalty to your score &mdash; just a gentle nudge and one fewer star. There is no way to lose.</p>
+      <button class="bigbtn" id="btn-how-back">Got it!</button>
+    </div>
+    <!-- Pause overlay -->
+    <div class="overlay hidden" id="ov-pause">
+      <h2>Paused</h2>
+      <p>Your half-finished case is safe on the workbench.</p>
+      <button class="bigbtn green" id="btn-resume">Resume</button>
+      <button class="bigbtn purple" id="btn-restart">Restart Case</button>
+      <button class="bigbtn" id="btn-quit">Back to Menu</button>
+    </div>
+    <!-- Clear overlay -->
+    <div class="overlay hidden" id="ov-clear">
+      <h2>Customer Delighted!</h2>
+      <div class="stars-big" id="clear-stars">&#9733;&#9733;&#9733;</div>
+      <p id="clear-text"></p>
+      <p class="sub" id="clear-score"></p>
+      <button class="bigbtn green" id="btn-next">Next Customer</button>
+    </div>
+    <!-- Win overlay -->
+    <div class="overlay hidden" id="ov-win">
+      <h2>Studio Superstar!</h2>
+      <div class="stars-big" id="win-stars"></div>
+      <p id="win-text"></p>
+      <p class="sub" id="win-score"></p>
+      <button class="bigbtn green" id="btn-again">Play Again</button>
+      <button class="bigbtn purple" id="btn-win-menu">Menu</button>
+    </div>
+    <!-- Levels overlay -->
+    <div class="overlay hidden" id="ov-levels">
+      <h2>Customers</h2>
+      <p class="sub">Pick a customer you have already unlocked.</p>
+      <div id="levels-grid"></div>
+      <button class="bigbtn purple" id="btn-levels-close">Close</button>
+    </div>
+  </div>
+  <div id="hint">Tap Start Crafting to open the studio.</div>
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="toolbar"></div>
+  <footer>Case Craft: Design Studio &mdash; an original craft toy. All art drawn in code, all music synthesized live.</footer>
+</div>
+
+<script>
+'use strict';
+/* ============================================================
+   Case Craft: Design Studio — original HTML5 canvas game.
+   Mechanics only inspired by decorating a phone case step by
+   step. All names, characters, art and music are original.
+   ============================================================ */
+
+// ---------- Data ----------
+var COLOURS = [
+  { id:'coral',  name:'Coral Pink',  hex:'#ff6b81' },
+  { id:'ocean',  name:'Ocean Blue',  hex:'#3d8bfd' },
+  { id:'mint',   name:'Mint Green',  hex:'#3fbf7f' },
+  { id:'sunny',  name:'Sunny Yellow',hex:'#ffc93c' },
+  { id:'grape',  name:'Grape Purple',hex:'#9b59d0' },
+  { id:'peach',  name:'Peach Orange',hex:'#ff9f43' },
+  { id:'rose',   name:'Rose Red',    hex:'#e63946' },
+  { id:'teal',   name:'Deep Teal',   hex:'#0e7c7b' }
+];
+var PATTERNS = [
+  { id:'plain',   name:'Plain' },
+  { id:'dots',    name:'Polka Dots' },
+  { id:'stripes', name:'Stripes' },
+  { id:'stars',   name:'Little Stars' },
+  { id:'hearts',  name:'Hearts' },
+  { id:'checker', name:'Checker' },
+  { id:'zigzag',  name:'Zigzag' },
+  { id:'waves',   name:'Waves' }
+];
+var STICKERS = [
+  { id:'star',   name:'Star' },
+  { id:'heart',  name:'Heart' },
+  { id:'flower', name:'Flower' },
+  { id:'moon',   name:'Moon' },
+  { id:'bolt',   name:'Bolt' },
+  { id:'paw',    name:'Paw' },
+  { id:'smile',  name:'Smiley' },
+  { id:'rocket', name:'Rocket' },
+  { id:'crown',  name:'Crown' },
+  { id:'gem',    name:'Gem' }
+];
+var CUSTOMERS = [
+  { name:'Mia',    colour:'coral', pattern:'plain',   stickers:[['star',1]],                 smudges:3, paint:0.80, line:'something sweet and simple' },
+  { name:'Leo',    colour:'ocean', pattern:'dots',    stickers:[['smile',1]],                smudges:3, paint:0.80, line:'dots like bubbles in the sea' },
+  { name:'Priya',  colour:'mint',  pattern:'stripes', stickers:[['flower',2]],               smudges:4, paint:0.82, line:'fresh stripes and flowers' },
+  { name:'Noah',   colour:'sunny', pattern:'stars',   stickers:[['star',2]],                 smudges:4, paint:0.82, line:'a case as bright as the sun' },
+  { name:'Zoe',    colour:'grape', pattern:'hearts',  stickers:[['heart',2]],                smudges:4, paint:0.85, line:'purple with lots of love' },
+  { name:'Omar',   colour:'teal',  pattern:'checker', stickers:[['bolt',1],['star',1]],      smudges:5, paint:0.85, line:'a smart checkerboard look' },
+  { name:'Lily',   colour:'peach', pattern:'waves',   stickers:[['flower',2],['moon',1]],    smudges:5, paint:0.85, line:'soft waves for beach days' },
+  { name:'Felix',  colour:'rose',  pattern:'zigzag',  stickers:[['bolt',2]],                 smudges:5, paint:0.88, line:'a bold zigzag with energy' },
+  { name:'Anya',   colour:'ocean', pattern:'hearts',  stickers:[['heart',2],['star',1]],     smudges:5, paint:0.88, line:'hearts over the deep blue' },
+  { name:'Kai',    colour:'mint',  pattern:'stars',   stickers:[['rocket',1],['star',2]],    smudges:6, paint:0.88, line:'a rocket case for a dreamer' },
+  { name:'Sofia',  colour:'coral', pattern:'dots',    stickers:[['flower',2],['heart',1]],   smudges:6, paint:0.90, line:'dots and blooms, please' },
+  { name:'Ben',    colour:'grape', pattern:'stripes', stickers:[['crown',1],['gem',2]],      smudges:6, paint:0.90, line:'royal stripes fit for a king' },
+  { name:'Hana',   colour:'sunny', pattern:'checker', stickers:[['smile',2],['flower',1]],   smudges:6, paint:0.90, line:'cheerful checks and smiles' },
+  { name:'Eli',    colour:'teal',  pattern:'zigzag',  stickers:[['paw',2],['bolt',1]],       smudges:7, paint:0.92, line:'zigzags for my adventure pup' },
+  { name:'Ruby',   colour:'rose',  pattern:'waves',   stickers:[['gem',2],['heart',1]],      smudges:7, paint:0.92, line:'waves with a little sparkle' },
+  { name:'Max',    colour:'peach', pattern:'stars',   stickers:[['rocket',2],['moon',1]],    smudges:7, paint:0.92, line:'a starry launchpad case' },
+  { name:'Ivy',    colour:'mint',  pattern:'hearts',  stickers:[['flower',2],['paw',1],['heart',1]], smudges:7, paint:0.94, line:'a garden of hearts and paws' },
+  { name:'Sam',    colour:'ocean', pattern:'dots',    stickers:[['moon',2],['star',2],['gem',1]],    smudges:8, paint:0.94, line:'a midnight sky I can hold' },
+  { name:'Nora',   colour:'grape', pattern:'waves',   stickers:[['crown',1],['gem',2],['star',1]],  smudges:8, paint:0.95, line:'my fanciest case ever, please' },
+  { name:'Alex',   colour:'coral', pattern:'stars',   stickers:[['rocket',1],['crown',1],['gem',2],['heart',1]], smudges:8, paint:0.95, line:'the grand finale case — everything!' }
+];
+
+// ---------- State ----------
+var canvas = document.getElementById('game');
+var ctx = canvas.getContext('2d');
+var W = 480, H = 560;
+var CASE = { x:140, y:120, w:200, h:330, r:34 };
+var state = {
+  screen:'menu', level:1, maxUnlocked:1, step:0, score:0, totalStars:0,
+  mistakes:0, muted:false, paused:false,
+  selectedColour:null, selectedPattern:null, selectedSticker:null,
+  smudges:[], paintCells:[], paintCount:0, patternApplied:false,
+  placed:[], // {type,x,y}
+  starsEarned:[], // per level
+  shake:0, sparkle:0, paintFlash:0
+};
+var GRID_COLS = 10, GRID_ROWS = 16;
+// Pre-fill the paint grid at boot: draw() runs from the menu screen,
+// before any level setup, so it must never index an empty grid.
+state.paintCells = [];
+for (var _r = 0; _r < GRID_ROWS; _r++){ var _row = []; for (var _c = 0; _c < GRID_COLS; _c++) _row.push(false); state.paintCells.push(_row); }
+
+function colourById(id){ for (var i=0;i<COLOURS.length;i++) if (COLOURS[i].id===id) return COLOURS[i]; return COLOURS[0]; }
+function patternById(id){ for (var i=0;i<PATTERNS.length;i++) if (PATTERNS[i].id===id) return PATTERNS[i]; return PATTERNS[0]; }
+function stickerById(id){ for (var i=0;i<STICKERS.length;i++) if (STICKERS[i].id===id) return STICKERS[i]; return STICKERS[0]; }
+function customer(){ return CUSTOMERS[state.level-1]; }
+function stickersNeeded(){
+  var out = [], c = customer();
+  c.stickers.forEach(function(pair){ out.push({ type:pair[0], need:pair[1], have:0 }); });
+  state.placed.forEach(function(p){
+    for (var i=0;i<out.length;i++) if (out[i].type===p.type) out[i].have++;
+  });
+  return out;
+}
+function stickersComplete(){
+  var n = stickersNeeded();
+  for (var i=0;i<n.length;i++) if (n[i].have < n[i].need) return false;
+  return true;
+}
+function paintPct(){ return state.paintCount / (GRID_COLS*GRID_ROWS); }
+
+// ---------- Audio (all synthesized, original) ----------
+var AC = null, masterGain = null, musicGain = null, musicTimer = null, musicStep = 0;
+function ensureAudio(){
+  if (AC) return;
+  try {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = AC.createGain(); masterGain.gain.value = state.muted ? 0 : 0.9; masterGain.connect(AC.destination);
+    musicGain = AC.createGain(); musicGain.gain.value = 0.16; musicGain.connect(masterGain);
+  } catch(e){ AC = null; }
+}
+function tone(freq, dur, type, vol, when, slideTo){
+  if (!AC || state.muted) return;
+  try {
+    var t = AC.currentTime + (when||0);
+    var o = AC.createOscillator(), g = AC.createGain();
+    o.type = type||'sine'; o.frequency.setValueAtTime(freq, t);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t+dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol||0.25, t+0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+    o.connect(g); g.connect(masterGain);
+    o.start(t); o.stop(t+dur+0.05);
+  } catch(e){}
+}
+function noiseBurst(dur, vol, freq){
+  if (!AC || state.muted) return;
+  try {
+    var t = AC.currentTime, len = Math.floor(AC.sampleRate*dur);
+    var buf = AC.createBuffer(1, len, AC.sampleRate), d = buf.getChannelData(0);
+    for (var i=0;i<len;i++) d[i] = (Math.random()*2-1) * (1 - i/len);
+    var src = AC.createBufferSource(); src.buffer = buf;
+    var f = AC.createBiquadFilter(); f.type='bandpass'; f.frequency.value = freq||1800; f.Q.value = 0.8;
+    var g = AC.createGain(); g.gain.value = vol||0.2;
+    src.connect(f); f.connect(g); g.connect(masterGain); src.start(t);
+  } catch(e){}
+}
+function sfx(name){
+  if (!AC) return;
+  if (name==='wipe'){ noiseBurst(0.12, 0.25, 900); }
+  else if (name==='spray'){ noiseBurst(0.08, 0.12, 2600); }
+  else if (name==='pop'){ tone(520, 0.12, 'triangle', 0.3, 0, 880); }
+  else if (name==='place'){ tone(660, 0.1, 'sine', 0.3); tone(990, 0.14, 'sine', 0.22, 0.06); }
+  else if (name==='wrong'){ tone(220, 0.18, 'sawtooth', 0.12, 0, 160); }
+  else if (name==='ding'){ tone(880, 0.25, 'sine', 0.3); tone(1318, 0.35, 'sine', 0.25, 0.1); }
+  else if (name==='star'){ [523,659,784,1047].forEach(function(f,i){ tone(f, 0.3, 'sine', 0.25, i*0.09); }); }
+  else if (name==='click'){ tone(700, 0.06, 'square', 0.12); }
+  else if (name==='fanfare'){ [523,659,784,1047,1319].forEach(function(f,i){ tone(f, 0.4, 'triangle', 0.25, i*0.11); }); }
+}
+// Original gentle music loop: C major pentatonic melody over soft pads.
+var MELODY = [523,659,784,880,784,659,587,523, 659,784,1047,880,784,659,587,659];
+var BASS   = [131, 175, 196, 262, 196, 175, 131, 196];
+function startMusic(){
+  ensureAudio(); if (!AC || musicTimer) return;
+  musicStep = 0;
+  musicTimer = setInterval(function(){
+    if (state.muted || state.paused || state.screen==='menu') return;
+    var i = musicStep % MELODY.length;
+    tone(MELODY[i], 0.5, 'sine', 0.10);
+    if (musicStep % 2 === 0) tone(BASS[(musicStep/2|0) % BASS.length], 1.1, 'triangle', 0.07);
+    if (musicStep % 8 === 0) tone(MELODY[i]/2, 1.4, 'sine', 0.05);
+    musicStep++;
+  }, 420);
+}
+function setMuted(m){
+  state.muted = m;
+  document.getElementById('btn-mute').textContent = m ? 'X' : '\u266A';
+  if (masterGain) masterGain.gain.value = m ? 0 : 0.9;
+  updateHUD();
+}
+
+// ---------- Level setup ----------
+function setupLevel(n){
+  state.level = n; state.step = 0; state.mistakes = 0;
+  state.selectedColour = null; state.selectedPattern = null; state.selectedSticker = null;
+  state.patternApplied = false; state.placed = []; state.shake = 0; state.sparkle = 0;
+  var c = customer();
+  state.smudges = [];
+  for (var i=0;i<c.smudges;i++){
+    state.smudges.push({ x: CASE.x + 25 + Math.random()*(CASE.w-50), y: CASE.y + 30 + Math.random()*(CASE.h-70), r: 16 + Math.random()*12, gone:false });
+  }
+  state.paintCells = [];
+  for (var r=0;r<GRID_ROWS;r++){ var row=[]; for (var col=0;col<GRID_COLS;col++) row.push(false); state.paintCells.push(row); }
+  state.paintCount = 0;
+  renderRequest(); renderToolbar(); updateSteps(); updateHUD(); updateProgress();
+  setHint('Tap each dusty smudge to wipe the case clean.');
+}
+function renderRequest(){
+  var c = customer();
+  var col = colourById(c.colour), pat = patternById(c.pattern);
+  var st = c.stickers.map(function(p){ return p[1] + ' \u00D7 ' + stickerById(p[0]).name; }).join(', ');
+  document.getElementById('request').innerHTML =
+    '<span class="req-line"><b>' + c.name + '</b> wants ' + c.line + ':</span>' +
+    '<span class="req-line">Colour: <b>' + col.name + '</b> &nbsp; Pattern: <b>' + pat.name + '</b></span>' +
+    '<span class="req-line">Stickers: <b>' + st + '</b></span>';
+}
+function updateSteps(){
+  var dots = document.querySelectorAll('.stepdot');
+  dots.forEach(function(d){
+    var s = parseInt(d.getAttribute('data-step'), 10);
+    d.classList.toggle('done', s < state.step);
+    d.classList.toggle('active', s === state.step);
+  });
+}
+function updateHUD(){
+  document.getElementById('hud-level').textContent = 'Customer ' + state.level + ' / 20';
+  document.getElementById('hud-score').textContent = 'Score ' + state.score;
+  document.getElementById('hud-stars').textContent = '\u2605 ' + state.totalStars;
+}
+function updateProgress(){
+  var frac = 0;
+  if (state.step===0) frac = (customer().smudges - state.smudges.filter(function(s){return !s.gone;}).length) / customer().smudges * 0.2;
+  else if (state.step===1) frac = 0.2 + Math.min(1, paintPct()/customer().paint) * 0.3;
+  else if (state.step===2) frac = 0.5 + (state.patternApplied?0.2:0);
+  else if (state.step===3){
+    var n = stickersNeeded(), have=0, need=0;
+    n.forEach(function(x){ have+=Math.min(x.have,x.need); need+=x.need; });
+    frac = 0.7 + (need? have/need : 1) * 0.3;
+  } else frac = 1;
+  document.getElementById('progress-bar').style.width = Math.round(frac*100) + '%';
+}
+function setHint(t){ document.getElementById('hint').textContent = t; }
+function showOnly(id){
+  ['ov-menu','ov-how','ov-pause','ov-clear','ov-win','ov-levels'].forEach(function(o){
+    document.getElementById(o).classList.toggle('hidden', o!==id);
+  });
+  if (!id) ['ov-menu','ov-how','ov-pause','ov-clear','ov-win','ov-levels'].forEach(function(o){ document.getElementById(o).classList.add('hidden'); });
+}
+
+// ---------- Toolbar ----------
+function renderToolbar(){
+  var tb = document.getElementById('toolbar');
+  tb.innerHTML = '';
+  if (state.screen!=='playing'){ return; }
+  var c = customer();
+  if (state.step===0){
+    var left = state.smudges.filter(function(s){return !s.gone;}).length;
+    tb.innerHTML = '<div class="toolrow"><span class="tool-label">Step 1 — Wipe: ' + left + ' smudge' + (left===1?'':'s') + ' left. Tap them!</span></div>';
+  } else if (state.step===1){
+    var row = document.createElement('div'); row.className='toolrow';
+    var lab = document.createElement('span'); lab.className='tool-label';
+    lab.textContent = 'Step 2 — Paint: pick ' + colourById(c.colour).name + ', then drag across the case (' + Math.round(paintPct()*100) + '% / ' + Math.round(c.paint*100) + '%)';
+    row.appendChild(lab);
+    COLOURS.forEach(function(col){
+      var b = document.createElement('button'); b.className='swatch' + (state.selectedColour===col.id?' sel':'');
+      b.style.background = col.hex; b.title = col.name; b.setAttribute('aria-label', col.name);
+      b.addEventListener('click', function(){ state.selectedColour = col.id; sfx('click'); renderToolbar(); });
+      row.appendChild(b);
+    });
+    tb.appendChild(row);
+  } else if (state.step===2){
+    var row2 = document.createElement('div'); row2.className='toolrow';
+    var lab2 = document.createElement('span'); lab2.className='tool-label';
+    lab2.textContent = 'Step 3 — Pattern: tap the pattern ' + c.name + ' asked for';
+    row2.appendChild(lab2);
+    PATTERNS.forEach(function(p){
+      var b = document.createElement('button'); b.className='tbtn'; b.textContent = p.name;
+      b.addEventListener('click', function(){ choosePattern(p.id); });
+      row2.appendChild(b);
+    });
+    tb.appendChild(row2);
+  } else if (state.step===3){
+    var row3 = document.createElement('div'); row3.className='toolrow';
+    var need = stickersNeeded();
+    var lab3 = document.createElement('span'); lab3.className='tool-label';
+    lab3.textContent = 'Step 4 — Stickers: ' + need.map(function(x){ return x.have + '/' + x.need + ' ' + stickerById(x.type).name; }).join('  •  ') + ' — pick one, then tap the case';
+    row3.appendChild(lab3);
+    STICKERS.forEach(function(st){
+      var b = document.createElement('button'); b.className='tbtn' + (state.selectedSticker===st.id?' sel':'');
+      var cv = document.createElement('canvas'); cv.width=36; cv.height=36;
+      drawSticker(cv.getContext('2d'), st.id, 18, 18, 13);
+      b.appendChild(cv);
+      var sp = document.createElement('span'); sp.textContent = st.name; b.appendChild(sp);
+      b.addEventListener('click', function(){ state.selectedSticker = st.id; sfx('click'); renderToolbar(); });
+      row3.appendChild(b);
+    });
+    tb.appendChild(row3);
+  } else if (state.step===4){
+    var row4 = document.createElement('div'); row4.className='toolrow';
+    var lab4 = document.createElement('span'); lab4.className='tool-label';
+    lab4.textContent = 'All done! Hand this beauty over.';
+    row4.appendChild(lab4);
+    var d = document.createElement('button'); d.className='bigbtn green'; d.id='btn-deliver'; d.textContent='Deliver Case';
+    d.addEventListener('click', deliver);
+    row4.appendChild(d);
+    tb.appendChild(row4);
+  }
+}
+
+function choosePattern(id){
+  var c = customer();
+  if (id === c.pattern){
+    state.patternApplied = true; state.selectedPattern = id;
+    sfx('ding'); state.sparkle = 30;
+    state.step = 3; setHint('Pattern applied! Now add the stickers.');
+    updateSteps(); renderToolbar(); updateProgress();
+  } else {
+    state.mistakes++; sfx('wrong'); state.shake = 12;
+    setHint('That is ' + patternById(id).name + ' — ' + c.name + ' asked for ' + patternById(c.pattern).name + '. Try again!');
+    renderToolbar();
+  }
+}
+
+function deliver(){
+  if (state.step!==4) return;
+  var stars = state.mistakes===0 ? 3 : (state.mistakes<=2 ? 2 : 1);
+  state.starsEarned[state.level-1] = stars;
+  state.totalStars += stars;
+  var gained = 100 + stars*25;
+  state.score += gained;
+  sfx('fanfare'); state.sparkle = 60;
+  if (state.level>=20){
+    state.screen='win';
+    document.getElementById('win-stars').textContent = '\u2605'.repeat(Math.max(1, Math.round(state.totalStars/20)));
+    document.getElementById('win-text').textContent = 'You crafted all 20 dream cases! ' + customer().name + ' loved the grand finale. Your studio is the talk of the town.';
+    document.getElementById('win-score').textContent = 'Final score: ' + state.score + '  •  Total stars: ' + state.totalStars + ' / 60';
+    showOnly('ov-win'); updateHUD();
+  } else {
+    state.screen='clear';
+    document.getElementById('clear-stars').textContent = '\u2605'.repeat(stars) + '\u2606'.repeat(3-stars);
+    document.getElementById('clear-text').textContent = customer().name + ' is thrilled with the case! +' + gained + ' points (' + stars + ' star' + (stars===1?'':'s') + ').';
+    document.getElementById('clear-score').textContent = 'Score: ' + state.score + '  •  Stars so far: ' + state.totalStars;
+    showOnly('ov-clear'); updateHUD();
+    sfx('star');
+  }
+  renderToolbar();
+}
+
+// ---------- Canvas drawing ----------
+function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function drawSticker(g, type, x, y, s){
+  g.save(); g.translate(x,y); g.lineWidth = Math.max(1.5, s*0.12); g.strokeStyle='rgba(0,0,0,0.25)';
+  if (type==='star'){ g.fillStyle='#ffd94d'; starPath(g,0,0,s,s*0.45,5); }
+  else if (type==='heart'){ g.fillStyle='#ff5c8a'; heartPath(g,0,0,s); }
+  else if (type==='flower'){
+    g.fillStyle='#ff8fb3';
+    for (var i=0;i<6;i++){ var a=i*Math.PI/3; g.beginPath(); g.ellipse(Math.cos(a)*s*0.45, Math.sin(a)*s*0.45, s*0.42, s*0.42, 0, 0, Math.PI*2); g.fill(); }
+    g.fillStyle='#ffc93c'; g.beginPath(); g.arc(0,0,s*0.4,0,Math.PI*2); g.fill();
+  }
+  else if (type==='moon'){ g.fillStyle='#ffe9a8'; g.beginPath(); g.arc(0,0,s,0,Math.PI*2); g.fill(); g.fillStyle='#fff'; g.beginPath(); g.arc(s*0.45,-s*0.2,s*0.85,0,Math.PI*2); g.fill(); }
+  else if (type==='bolt'){ g.fillStyle='#ffc93c'; g.beginPath(); g.moveTo(s*0.25,-s); g.lineTo(-s*0.55,s*0.25); g.lineTo(-s*0.05,s*0.25); g.lineTo(-s*0.25,s); g.lineTo(s*0.55,-s*0.25); g.lineTo(s*0.05,-s*0.25); g.closePath(); g.fill(); g.stroke(); }
+  else if (type==='paw'){
+    g.fillStyle='#c98a5e';
+    g.beginPath(); g.ellipse(0,s*0.25,s*0.55,s*0.45,0,0,Math.PI*2); g.fill();
+    [[-0.55,-0.45],[0,-0.65],[0.55,-0.45]].forEach(function(p){ g.beginPath(); g.ellipse(p[0]*s,p[1]*s,s*0.26,s*0.32,0,0,Math.PI*2); g.fill(); });
+  }
+  else if (type==='smile'){
+    g.fillStyle='#ffe066'; g.beginPath(); g.arc(0,0,s,0,Math.PI*2); g.fill(); g.stroke();
+    g.fillStyle='#333'; g.beginPath(); g.arc(-s*0.35,-s*0.25,s*0.13,0,Math.PI*2); g.fill(); g.beginPath(); g.arc(s*0.35,-s*0.25,s*0.13,0,Math.PI*2); g.fill();
+    g.strokeStyle='#333'; g.lineWidth=s*0.12; g.beginPath(); g.arc(0,s*0.1,s*0.5,0.15*Math.PI,0.85*Math.PI); g.stroke();
+  }
+  else if (type==='rocket'){
+    g.fillStyle='#e8e8f0'; g.beginPath(); g.moveTo(0,-s); g.quadraticCurveTo(s*0.7,-s*0.3,s*0.5,s*0.5); g.lineTo(-s*0.5,s*0.5); g.quadraticCurveTo(-s*0.7,-s*0.3,0,-s); g.fill(); g.stroke();
+    g.fillStyle='#3d8bfd'; g.beginPath(); g.arc(0,-s*0.25,s*0.28,0,Math.PI*2); g.fill();
+    g.fillStyle='#ff6b35'; g.beginPath(); g.moveTo(-s*0.3,s*0.55); g.lineTo(0,s*1.05); g.lineTo(s*0.3,s*0.55); g.closePath(); g.fill();
+  }
+  else if (type==='crown'){
+    g.fillStyle='#ffd94d'; g.beginPath(); g.moveTo(-s,-s*0.2); g.lineTo(-s,s*0.7); g.lineTo(s,s*0.7); g.lineTo(s,-s*0.2); g.lineTo(s*0.5,s*0.15); g.lineTo(0,-s*0.7); g.lineTo(-s*0.5,s*0.15); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle='#ff5c8a'; g.beginPath(); g.arc(0,s*0.35,s*0.16,0,Math.PI*2); g.fill();
+  }
+  else if (type==='gem'){
+    g.fillStyle='#7ee0f5'; g.beginPath(); g.moveTo(-s,-s*0.3); g.lineTo(-s*0.5,-s); g.lineTo(s*0.5,-s); g.lineTo(s,-s*0.3); g.lineTo(0,s); g.closePath(); g.fill(); g.stroke();
+    g.strokeStyle='rgba(255,255,255,0.8)'; g.beginPath(); g.moveTo(-s*0.5,-s); g.lineTo(0,s); g.moveTo(s*0.5,-s); g.lineTo(0,s); g.stroke();
+  }
+  g.restore();
+}
+function starPath(g,x,y,R,r,n){
+  g.beginPath();
+  for (var i=0;i<n*2;i++){ var ang=i*Math.PI/n - Math.PI/2, rad=i%2===0?R:r; var px=x+Math.cos(ang)*rad, py=y+Math.sin(ang)*rad; if(i===0) g.moveTo(px,py); else g.lineTo(px,py); }
+  g.closePath(); g.fill(); g.stroke();
+}
+function heartPath(g,x,y,s){
+  g.beginPath(); g.moveTo(x,y+s*0.85);
+  g.bezierCurveTo(x-s*1.1,y+s*0.1, x-s*0.7,y-s*0.9, x,y-s*0.25);
+  g.bezierCurveTo(x+s*0.7,y-s*0.9, x+s*1.1,y+s*0.1, x,y+s*0.85);
+  g.closePath(); g.fill(); g.stroke();
+}
+function drawAvatar(g, x, y, r, seed){
+  var skins=['#f2c89b','#e8b184','#c98d64','#8d5524'];
+  var hairs=['#5b3a1e','#222222','#c2185b','#e07b39','#3a2d5c'];
+  var skin=skins[seed%skins.length], hair=hairs[(seed*3+1)%hairs.length];
+  g.save();
+  g.fillStyle=hair; g.beginPath(); g.arc(x,y-r*0.25,r*1.05,Math.PI,0); g.fill();
+  g.fillStyle=skin; g.beginPath(); g.arc(x,y,r*0.95,0,Math.PI*2); g.fill();
+  g.fillStyle=hair; g.beginPath(); g.arc(x,y-r*0.55,r*0.9,Math.PI*1.05,Math.PI*1.95); g.fill();
+  g.fillStyle='#222'; g.beginPath(); g.arc(x-r*0.35,y-r*0.05,r*0.09,0,Math.PI*2); g.fill(); g.beginPath(); g.arc(x+r*0.35,y-r*0.05,r*0.09,0,Math.PI*2); g.fill();
+  g.strokeStyle='#8a4a2a'; g.lineWidth=2; g.beginPath(); g.arc(x,y+r*0.35,r*0.35,0.15*Math.PI,0.85*Math.PI); g.stroke();
+  g.restore();
+}
+function clipCase(){
+  ctx.save(); rr(CASE.x, CASE.y, CASE.w, CASE.h, CASE.r); ctx.clip();
+}
+function drawPatternOverlay(){
+  var c = customer(), pat = state.selectedPattern || (state.patternApplied ? c.pattern : null);
+  if (!state.patternApplied || !pat) return;
+  var col = colourById(c.colour).hex;
+  ctx.save(); ctx.globalAlpha = 0.9;
+  if (pat==='dots'){
+    ctx.fillStyle='rgba(255,255,255,0.85)';
+    for (var y=CASE.y+55;y<CASE.y+CASE.h-15;y+=34) for (var x=CASE.x+22;x<CASE.x+CASE.w-15;x+=34){ ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2); ctx.fill(); }
+  } else if (pat==='stripes'){
+    ctx.fillStyle='rgba(255,255,255,0.55)';
+    for (var i=-4;i<10;i++){ ctx.save(); ctx.translate(CASE.x+CASE.y,0); ctx.rotate(0); ctx.restore(); ctx.fillRect(CASE.x+i*44, CASE.y, 18, CASE.h); }
+  } else if (pat==='stars'){
+    ctx.fillStyle='#fff'; for (var s=0;s<14;s++){ var sx=CASE.x+20+((s*67)%(CASE.w-40)), sy=CASE.y+55+((s*89)%(CASE.h-80)); starPath(ctx,sx,sy,9,4,5); }
+  } else if (pat==='hearts'){
+    ctx.fillStyle='rgba(255,255,255,0.9)'; for (var h=0;h<10;h++){ var hx=CASE.x+30+((h*73)%(CASE.w-60)), hy=CASE.y+60+((h*97)%(CASE.h-90)); heartPath(ctx,hx,hy,9); }
+  } else if (pat==='checker'){
+    ctx.fillStyle='rgba(255,255,255,0.5)';
+    for (var r=0;r<8;r++) for (var cc=0;cc<5;cc++){ if ((r+cc)%2===0) ctx.fillRect(CASE.x+cc*40, CASE.y+40+r*36, 40, 36); }
+  } else if (pat==='zigzag'){
+    ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=7; ctx.lineJoin='round';
+    for (var z=0;z<6;z++){ var zy=CASE.y+70+z*42; ctx.beginPath(); ctx.moveTo(CASE.x+8,zy); for (var zx=0;zx<=5;zx++) ctx.lineTo(CASE.x+8+zx*38, zy+((zx%2===0)?-12:12)); ctx.stroke(); }
+  } else if (pat==='waves'){
+    ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=6;
+    for (var w=0;w<7;w++){ var wy=CASE.y+60+w*40; ctx.beginPath(); for (var wx=0;wx<=CASE.w;wx+=8) ctx.lineTo(CASE.x+wx, wy+Math.sin(wx/28)*9); ctx.stroke(); }
+  }
+  ctx.restore();
+}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  var ox = 0, oy = 0;
+  if (state.shake>0){ ox = (Math.random()-0.5)*state.shake; oy = (Math.random()-0.5)*state.shake; state.shake--; }
+  ctx.save(); ctx.translate(ox,oy);
+  // workbench
+  var bg = ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#f7ead9'); bg.addColorStop(1,'#e9d5c0');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#d9b48f'; ctx.fillRect(0,470,W,90);
+  ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.fillRect(0,470,W,4);
+  // shelf with paint pots (decorative, original)
+  ctx.fillStyle='#8a6a4a'; ctx.fillRect(20,18,440,10);
+  COLOURS.slice(0,6).forEach(function(col,i){
+    var px=45+i*68;
+    ctx.fillStyle=col.hex; rr(px, -6, 34, 30, 6); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.fillRect(px+5,0,8,10);
+  });
+  // customer avatar + speech
+  var c = customer();
+  drawAvatar(ctx, 62, 78, 34, state.level);
+  ctx.fillStyle='#fff'; rr(108, 42, 330, 56, 14); ctx.fill();
+  ctx.strokeStyle='#e8c9d8'; ctx.lineWidth=2; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(104,72); ctx.lineTo(88,82); ctx.lineTo(106,88); ctx.closePath(); ctx.fillStyle='#fff'; ctx.fill();
+  ctx.fillStyle='#3a2d5c'; ctx.font='bold 15px Trebuchet MS, sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText(c.name + ': "' + c.line + '"', 120, 62);
+  ctx.fillStyle='#6a4a9a'; ctx.font='13px Trebuchet MS, sans-serif';
+  ctx.fillText(colourById(c.colour).name + '  •  ' + patternById(c.pattern).name, 120, 84);
+  // case shadow
+  ctx.fillStyle='rgba(0,0,0,0.18)'; rr(CASE.x+6, CASE.y+10, CASE.w, CASE.h, CASE.r); ctx.fill();
+  // case base
+  clipCase();
+  ctx.fillStyle = '#cfc4b8'; ctx.fillRect(CASE.x, CASE.y, CASE.w, CASE.h);
+  // painted cells
+  var col = colourById(c.colour);
+  var cw = CASE.w/GRID_COLS, ch = CASE.h/GRID_ROWS;
+  ctx.fillStyle = col.hex;
+  for (var r=0;r<GRID_ROWS;r++) for (var cc=0;cc<GRID_COLS;cc++) if (state.paintCells[r][cc]) ctx.fillRect(CASE.x+cc*cw, CASE.y+r*ch, cw+1, ch+1);
+  // subtle sheen
+  ctx.fillStyle='rgba(255,255,255,0.12)'; ctx.fillRect(CASE.x, CASE.y, 26, CASE.h);
+  drawPatternOverlay();
+  // stickers on case
+  state.placed.forEach(function(p){ drawSticker(ctx, p.type, p.x, p.y, 17); });
+  // smudges
+  state.smudges.forEach(function(s){
+    if (s.gone) return;
+    ctx.fillStyle='rgba(120,90,60,0.55)'; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(90,65,40,0.5)'; ctx.beginPath(); ctx.arc(s.x-s.r*0.3, s.y-s.r*0.25, s.r*0.5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.arc(s.x-s.r*0.4, s.y-s.r*0.45, s.r*0.18, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.restore(); // unclip
+  // case outline + camera
+  ctx.strokeStyle='#5b4a8a'; ctx.lineWidth=4; rr(CASE.x, CASE.y, CASE.w, CASE.h, CASE.r); ctx.stroke();
+  ctx.fillStyle='#3a2d5c'; rr(CASE.x+18, CASE.y+16, 52, 52, 14); ctx.fill();
+  ctx.fillStyle='#222'; ctx.beginPath(); ctx.arc(CASE.x+34, CASE.y+32, 9, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(CASE.x+54, CASE.y+32, 9, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(CASE.x+44, CASE.y+52, 9, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='#7ec8ff'; ctx.beginPath(); ctx.arc(CASE.x+34, CASE.y+32, 3.5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(CASE.x+54, CASE.y+32, 3.5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(CASE.x+44, CASE.y+52, 3.5, 0, Math.PI*2); ctx.fill();
+  // paint meter on case edge
+  if (state.step===1){
+    ctx.fillStyle='#fff'; rr(CASE.x-16, CASE.y, 10, CASE.h, 5); ctx.fill();
+    ctx.fillStyle=col.hex; var ph = CASE.h * Math.min(1, paintPct()/customer().paint);
+    rr(CASE.x-16, CASE.y+CASE.h-ph, 10, ph, 5); ctx.fill();
+  }
+  // sparkles
+  if (state.sparkle>0){
+    state.sparkle--;
+    ctx.fillStyle='#ffd94d';
+    for (var i=0;i<8;i++){ var a=i*Math.PI/4 + state.sparkle*0.05; var sx=CASE.x+CASE.w/2+Math.cos(a)*110, sy=CASE.y+CASE.h/2+Math.sin(a)*170; starPath(ctx,sx,sy,7,3,4); }
+  }
+  // step banner when wipe done etc.
+  ctx.restore();
+  requestAnimationFrame(draw);
+}
+
+// ---------- Pointer handling ----------
+var painting = false;
+function canvasPos(e){
+  var rect = canvas.getBoundingClientRect();
+  var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return { x:(clientX-rect.left)/rect.width*W, y:(clientY-rect.top)/rect.height*H };
+}
+function inCase(p){ return p.x>=CASE.x && p.x<=CASE.x+CASE.w && p.y>=CASE.y && p.y<=CASE.y+CASE.h; }
+function handlePoint(p, isMove){
+  if (state.screen!=='playing' || state.paused) return;
+  var c = customer();
+  if (state.step===0){
+    for (var i=0;i<state.smudges.length;i++){
+      var s = state.smudges[i];
+      if (!s.gone && Math.hypot(p.x-s.x, p.y-s.y) < s.r+14){
+        s.gone = true; sfx('wipe');
+        var left = state.smudges.filter(function(x){return !x.gone;}).length;
+        if (left===0){
+          state.step=1; setHint('Sparkling clean! Pick the paint colour, then drag across the case.');
+          sfx('ding'); updateSteps(); renderToolbar();
+        } else setHint(left + ' smudge' + (left===1?'':'s') + ' left — keep wiping!');
+        renderToolbar(); updateProgress();
+        return;
+      }
+    }
+  } else if (state.step===1){
+    if (!inCase(p)) return;
+    if (!state.selectedColour){ setHint('Pick a paint colour from the tray first!'); return; }
+    if (state.selectedColour !== c.colour){
+      if (!isMove){ state.mistakes++; sfx('wrong'); state.shake=10; setHint('That is ' + colourById(state.selectedColour).name + ' — ' + c.name + ' asked for ' + colourById(c.colour).name + '.'); }
+      return;
+    }
+    var col = Math.floor((p.x-CASE.x)/CASE.w*GRID_COLS), row = Math.floor((p.y-CASE.y)/CASE.h*GRID_ROWS);
+    col = Math.max(0, Math.min(GRID_COLS-1, col)); row = Math.max(0, Math.min(GRID_ROWS-1, row));
+    // paint a 3x3 soft brush
+    var painted = false;
+    for (var dr=-1;dr<=1;dr++) for (var dc=-1;dc<=1;dc++){
+      var rr2=row+dr, cc2=col+dc;
+      if (rr2>=0 && rr2<GRID_ROWS && cc2>=0 && cc2<GRID_COLS && !state.paintCells[rr2][cc2]){ state.paintCells[rr2][cc2]=true; state.paintCount++; painted=true; }
+    }
+    if (painted) sfx('spray');
+    // Re-render the paint % label only when it visibly changes (every 5%),
+    // not on every pointermove — keeps drag painting smooth.
+    var bucket = Math.floor(paintPct()*20);
+    if (bucket !== state._paintBucket){ state._paintBucket = bucket; renderToolbar(); }
+    updateProgress();
+    if (paintPct() >= c.paint){
+      state.step=2; setHint('Beautiful colour! Now pick the pattern.');
+      sfx('ding'); updateSteps(); renderToolbar(); updateProgress();
+    }
+  } else if (state.step===3){
+    if (!inCase(p)) return;
+    // tap a placed sticker to remove it?
+    for (var j=state.placed.length-1;j>=0;j--){
+      var pl = state.placed[j];
+      if (Math.hypot(p.x-pl.x, p.y-pl.y) < 24){
+        state.placed.splice(j,1); sfx('pop'); setHint('Sticker peeled off. Place it somewhere else if you like.');
+        renderToolbar(); updateProgress(); return;
+      }
+    }
+    if (!state.selectedSticker){ setHint('Pick a sticker from the tray first, then tap the case.'); return; }
+    var need = stickersNeeded();
+    var entry = null;
+    need.forEach(function(x){ if (x.type===state.selectedSticker) entry=x; });
+    if (!entry){ state.mistakes++; sfx('wrong'); setHint(c.name + ' did not ask for a ' + stickerById(state.selectedSticker).name + ' on this case.'); return; }
+    if (entry.have >= entry.need){ setHint('That is enough ' + stickerById(state.selectedSticker).name + 's already — pick another sticker.'); return; }
+    state.placed.push({ type:state.selectedSticker, x:p.x, y:p.y });
+    sfx('place');
+    if (stickersComplete()){
+      state.step=4; setHint('Perfect! Tap Deliver to hand it over.');
+      sfx('ding'); updateSteps(); renderToolbar(); updateProgress();
+    } else { renderToolbar(); updateProgress(); }
+  }
+}
+canvas.addEventListener('pointerdown', function(e){ e.preventDefault(); painting=true; handlePoint(canvasPos(e), false); });
+canvas.addEventListener('pointermove', function(e){ if (!painting) return; if (state.step===1) handlePoint(canvasPos(e), true); });
+window.addEventListener('pointerup', function(){ painting=false; });
+canvas.addEventListener('touchstart', function(e){ e.preventDefault(); }, { passive:false });
+
+// ---------- Flow / buttons ----------
+function startGame(){
+  ensureAudio(); startMusic();
+  if (AC && AC.state==='suspended') AC.resume();
+  state.screen='playing'; state.paused=false;
+  showOnly(null); setupLevel(state.level);
+  sfx('click');
+}
+function nextCustomer(){
+  state.maxUnlocked = Math.max(state.maxUnlocked, state.level+1);
+  state.screen='playing'; showOnly(null); setupLevel(state.level+1);
+}
+function openLevels(){
+  var g = document.getElementById('levels-grid'); g.innerHTML='';
+  for (var i=1;i<=20;i++){
+    var b = document.createElement('button'); b.className='lv' + (i>state.maxUnlocked?' locked':'');
+    b.innerHTML = i + '<span class="lvstars">' + ('\u2605'.repeat(state.starsEarned[i-1]||0) || '&nbsp;') + '</span>';
+    (function(n, locked){
+      b.addEventListener('click', function(){
+        if (locked) return;
+        state.screen='playing'; state.paused=false; showOnly(null); setupLevel(n); sfx('click');
+      });
+    })(i, i>state.maxUnlocked);
+    g.appendChild(b);
+  }
+  if (state.screen==='playing'){ state.paused=true; }
+  showOnly('ov-levels');
+}
+document.getElementById('btn-start').addEventListener('click', function(){ state.level=1; startGame(); });
+document.getElementById('btn-how').addEventListener('click', function(){ showOnly('ov-how'); });
+document.getElementById('btn-how-back').addEventListener('click', function(){ showOnly('ov-menu'); });
+document.getElementById('btn-next').addEventListener('click', function(){ sfx('click'); nextCustomer(); });
+document.getElementById('btn-again').addEventListener('click', function(){ state.score=0; state.totalStars=0; state.starsEarned=[]; state.maxUnlocked=1; state.level=1; startGame(); });
+document.getElementById('btn-win-menu').addEventListener('click', function(){ state.screen='menu'; showOnly('ov-menu'); renderToolbar(); });
+document.getElementById('btn-quit').addEventListener('click', function(){ state.screen='menu'; state.paused=false; showOnly('ov-menu'); renderToolbar(); });
+document.getElementById('btn-restart').addEventListener('click', function(){ state.screen='playing'; state.paused=false; showOnly(null); setupLevel(state.level); });
+document.getElementById('btn-resume').addEventListener('click', function(){ state.screen='playing'; state.paused=false; showOnly(null); if (AC) AC.resume(); });
+document.getElementById('btn-pause').addEventListener('click', function(){
+  if (state.screen!=='playing' || state.paused) return;
+  state.paused=true; showOnly('ov-pause'); if (AC) AC.suspend();
+});
+document.getElementById('btn-mute').addEventListener('click', function(){ ensureAudio(); setMuted(!state.muted); });
+document.getElementById('btn-levels').addEventListener('click', function(){ if (state.screen==='playing' || state.screen==='paused') openLevels(); else openLevels(); });
+document.getElementById('btn-levels-close').addEventListener('click', function(){
+  if (state.screen==='playing' && state.paused){ state.paused=false; showOnly(null); if (AC) AC.resume(); }
+  else if (state.screen==='menu'){ showOnly('ov-menu'); }
+  else { showOnly(null); }
+});
+
+// ---------- Test hook ----------
+window.__caseCraft = function(){
+  var c = customer();
+  var need = stickersNeeded();
+  return {
+    screen: state.screen, level: state.level, step: state.step,
+    stepName: ['wipe','paint','pattern','stickers','deliver'][state.step],
+    paused: state.paused, muted: state.muted,
+    score: state.score, totalStars: state.totalStars, mistakes: state.mistakes,
+    maxUnlocked: state.maxUnlocked,
+    customer: c.name, colour: c.colour, colourName: colourById(c.colour).name,
+    pattern: c.pattern, patternName: patternById(c.pattern).name,
+    wipeLeft: state.smudges.filter(function(s){return !s.gone;}).length,
+    smudges: state.smudges.filter(function(s){return !s.gone;}).map(function(s){ return { x: Math.round(s.x/W*100), y: Math.round(s.y/H*100) }; }),
+    paintPct: Math.round(paintPct()*100)/100, paintTarget: c.paint,
+    selectedColour: state.selectedColour, selectedSticker: state.selectedSticker,
+    patternApplied: state.patternApplied,
+    stickersNeeded: need, stickersPlaced: state.placed.length,
+    stickersComplete: stickersComplete(),
+    canDeliver: state.step===4,
+    caseRect: { x: Math.round(CASE.x/W*100), y: Math.round(CASE.y/H*100), w: Math.round(CASE.w/W*100), h: Math.round(CASE.h/H*100) },
+    starsEarned: state.starsEarned.slice()
+  };
+};
+
+// ---------- Boot ----------
+renderRequest();
+document.getElementById('request').innerHTML = '<span class="req-line">Welcome to the studio! Press <b>Start Crafting</b> to meet your first customer.</span>';
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
